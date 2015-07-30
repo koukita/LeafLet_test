@@ -31,10 +31,10 @@ var info = L.control();
 		};
 
 	info.update = function (props) {
-		this._div.innerHTML = '<h4>津波最大高さ</h4>' +  (props ?
-		'<b>' + props.max + '</b> m'
-		: 'マウスで最大高さ表示');
-		};
+			this._div.innerHTML = '<h4>津波最大高さ</h4>' +  (props ?
+			'<b>' + props.max + '</b> m'
+			: 'マウスで最大高さ表示');
+			};
 
 	info.addTo(map);
 
@@ -77,6 +77,7 @@ function highlightFeature(e) {
 	}
 
 	info.update(layer.feature.properties);  //カスタムコントロールの更新
+
 }
 
 var geojson;
@@ -100,11 +101,54 @@ var geojson;
 		});
 	}
 
+var geojsonMinZoom = 16,geojsonMaxZoom = 20;  //ポリゴンを表示する範囲を指定
 
-geojson = L.geoJson(tsunamiData, {
-	style: style,
-	onEachFeature: onEachFeature
-}).addTo(map);
+//空のデータを用意
+var	emptyData = {"type": "FeatureCollection",
+		"crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:OGC:1.3:CRS84" } },	                                                                                
+		"features": []};  
+
+var emptyGeojson = L.geoJson(emptyData,{style:style});  //空のデータ
+var orgGeojson = L.geoJson(tsunamiData,{style:style});  //ポリゴンデータ
+
+//空のデータをマップにセットする
+geojson = L.geoJson(emptyData, {style: style}).addTo(map);
+
+//ズームレベルで表示するデータを選択する
+function getGeoJSONLayer(){
+	var _zoom = map.getZoom();
+	var _data;
+	if (_zoom >= geojsonMinZoom && _zoom <= geojsonMaxZoom){
+		return orgGeojson;
+	}else{
+		return emptyGeojson;
+	}
+}
+
+//地図の表示範囲内のデータのみ表示する
+function updateGeoJSONLayer(){
+	geojson.clearLayers();  //レイヤをクリア
+	var _layers = getGeoJSONLayer();
+	var _bounds = map.getBounds();
+	_layers.eachLayer(function(layer){
+		if (_bounds.contains(layer.getBounds())){
+			layer.on({
+				mouseover: highlightFeature,
+				mouseout: resetHighlight,
+				click: zoomToFeature
+			}).addTo(geojson);
+
+		}
+	},this);
+	geojson.addTo(map);
+}
+
+updateGeoJSONLayer();
+
+map.on('moveend', function(map) {
+    updateGeoJSONLayer(); // e is an event object (MouseEvent in this case)
+});
+
 
 //オーバーレイ選択画面
 var Map_Over = {
