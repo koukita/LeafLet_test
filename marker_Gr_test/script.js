@@ -12,8 +12,8 @@ var m_Osm = new L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
 var map = L.map('map', {
 	center: [42.827639, 140.811768],  //中心位置を指定（この例は羊蹄山）
 	zoom: 11,                         //デフォルトのズームレベルを指定
-	minzoom: 8,                         //最小ズーム
-	maxzoom: 14,                         //最大ズーム
+	minZoom: 8,                         //最小ズーム
+	maxZoom: 14,                         //最大ズーム
 	zoomControl:true,　　             //ズームコントロールを表示・非表示
  	layers: [m_Chiriin] });
 
